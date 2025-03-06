@@ -1,0 +1,17 @@
+echo '{
+  "name": "texas-poker",
+  "version": "1.0.0",
+  "description": "德州扑克网页游戏",
+  "scripts": {
+    "start": "cd server && npm start",
+    "build": "cd client && npm run build",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm start\"",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^6.3.0"
+  }
+}' > package.json
