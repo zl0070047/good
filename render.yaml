@@ -7,16 +7,14 @@ services:
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
+        value: production- key: PORT
+        value:10000
       - key: MONGO_URI
         sync: false
       - key: CLIENT_URL
         fromService:
           type: web
-          name: texas-poker-web
-          envVarKey: RENDER_EXTERNAL_URL# 前端静态网站
+          name: texas-poker-webenvVarKey: RENDER_EXTERNAL_URL# 前端静态网站
   - type: web
     name: texas-poker-web
     env: static
