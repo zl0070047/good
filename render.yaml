@@ -14,7 +14,8 @@ services:
       - key: CLIENT_URL
         fromService:
           type: web
-          name: texas-poker-webenvVarKey: RENDER_EXTERNAL_URL# 前端静态网站
+          name: texas-poker-web
+          envVarKey: RENDER_EXTERNAL_URL# 前端静态网站
   - type: web
     name: texas-poker-web
     env: static
