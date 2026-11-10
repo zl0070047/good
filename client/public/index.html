@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>德州扑克</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        .poker-table {
+            width: 800px;
+            height: 400px;
+            background: #008000;
+            border-radius: 200px;
+            margin: 20px auto;
+            position: relative;
+        }
+        .player {
+            position: absolute;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .cards {
+            display: flex;
+            gap: 5px;
+        }
+        .card {
+            width: 60px;
+            height: 90px;
+            background: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+        .community-cards {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 10px;
+        }
+        .betting-controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .red {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>德州扑克游戏</h1>
+        <div id="login" style="text-align: center; margin: 20px;">
+            <input type="text" id="playerName" placeholder="输入玩家名称">
+            <button onclick="joinGame()">加入游戏</button>
+        </div>
+        <div class="poker-table">
+            <div id="players"></div>
+            <div class="community-cards" id="communityCards"></div>
+        </div>
+        <div class="betting-controls">
+            <input type="number" id="betAmount" placeholder="下注金额">
+            <button onclick="placeBet()">下注</button>
+            <button onclick="startGame()">开始游戏</button>
+        </div>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        const socket = io('http://localhost:5000');
+        let currentRoom = 'room1';
+        let myCards = [];
+        
+        function joinGame() {
+            const playerName = document.getElementById('playerName').value;
+            if (playerName) {
+                socket.emit('joinRoom', { 
+                    roomId: currentRoom,
+                    playerName: playerName
+                });
+                document.getElementById('login').style.display = 'none';
+            }
+        }
+
+        function startGame() {
+            socket.emit('startGame', currentRoom);
+        }
+
+        function placeBet() {
+            const amount = parseInt(document.getElementById('betAmount').value);
+            if (amount > 0) {
+                socket.emit('placeBet', {
+                    roomId: currentRoom,
+                    amount: amount
+                });
+            }
+        }
+
+        function renderCard(card) {
+            const color = card.suit === '♥' || card.suit === '♦' ? 'red' : 'black';
+            return `<div class="card" style="color: ${color}">${card.value}${card.suit}</div>`;
+        }
+
+        function renderPlayers(players) {
+            const container = document.getElementById('players');
+            container.innerHTML = '';
+            
+            players.forEach((player, index) => {
+                const angle = (360 / players.length) * index;
+                const radius = 150;
+                const x = 400 + radius * Math.cos(angle * Math.PI / 180);
+                const y = 200 + radius * Math.sin(angle * Math.PI / 180);
+                
+                const div = document.createElement('div');
+                div.className = 'player';
+                div.style.left = `${x}px`;
+                div.style.top = `${y}px`;
+                div.innerHTML = `
+                    <div>${player.name}</div>
+                    <div>筹码: ${player.chips}</div>
+                    <div class="cards">
+                        ${player.cards ? player.cards.map(renderCard).join('') : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        socket.on('roomJoined', (data) => {
+            renderPlayers(data.players);
+            document.getElementById('messages').innerHTML += `<p>加入房间: ${data.room}</p>`;
+        });
+
+        socket.on('gameStarted', (data) => {
+            renderPlayers(data.players);
+            document.getElementById('messages').innerHTML += `<p>游戏开始!</p>`;
+        });
+
+        socket.on('dealCards', (data) => {
+            myCards = data.cards;
+            renderPlayers([{ name: '我', cards: myCards }]);
+        });
+
+        socket.on('betPlaced', (data) => {
+            document.getElementById('messages').innerHTML += 
+                `<p>玩家下注: ${data.amount} 筹码</p>`;
+        });
+
+        socket.on('playerLeft', (data) => {
+            renderPlayers(data.players);
+            document.getElementById('messages').innerHTML += 
+                `<p>玩家离开了游戏</p>`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# 依赖
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnp
+.pnp.js
+
+# 环境文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 构建目录
+/client/build
+/client/dist
+
+# 其他
+.DS_Store
+.idea/
+.vscode/
+*.log
